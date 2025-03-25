@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import axios from "axios";
-import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 
 const API_URL="http://localhost:5000/api/auth";
 axios.defaults.withCredentials=true;
