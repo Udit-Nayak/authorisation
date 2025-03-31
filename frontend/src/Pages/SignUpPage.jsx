@@ -10,6 +10,7 @@ const SignUpPage = () => {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [localError, setLocalError] = useState(null);
 	const navigate = useNavigate();
 
 	const { signup, error, isLoading } = useAuthStore();
@@ -17,13 +18,20 @@ const SignUpPage = () => {
 	const handleSignUp = async (e) => {
 		e.preventDefault();
 
+		// Basic validation
+		if (!name.trim() || !email.trim() || !password.trim()) {
+			setLocalError("All fields are required.");
+			return;
+		}
+
 		try {
-			await signup(email, password, name);
+			await signup(email.trim(), password.trim(), name.trim());
 			navigate("/verify-email");
 		} catch (error) {
-			console.log(error);
+			setLocalError(error.message || "Something went wrong.");
 		}
 	};
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -59,20 +67,22 @@ const SignUpPage = () => {
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
-					{error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
+
+					{(localError || error) && <p className='text-red-500 font-semibold mt-2'>{localError || error}</p>}
+
 					<PasswordStrengthMeter password={password} />
 
 					<motion.button
-						className='mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white 
-						font-bold rounded-lg shadow-lg hover:from-green-600
-						hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
-						 focus:ring-offset-gray-900 transition duration-200'
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
+						className={`mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white 
+						font-bold rounded-lg shadow-lg transition duration-200 
+						${isLoading || !name || !email || !password ? "opacity-50 cursor-not-allowed" : "hover:from-green-600 hover:to-emerald-700"}
+						`}
+						whileHover={isLoading ? {} : { scale: 1.02 }}
+						whileTap={isLoading ? {} : { scale: 0.98 }}
 						type='submit'
-						disabled={isLoading}
+						disabled={isLoading || !name || !email || !password}
 					>
-						{isLoading ? <Loader className=' animate-spin mx-auto' size={24} /> : "Sign Up"}
+						{isLoading ? <Loader className='animate-spin mx-auto' size={24} /> : "Sign Up"}
 					</motion.button>
 				</form>
 			</div>
@@ -87,4 +97,5 @@ const SignUpPage = () => {
 		</motion.div>
 	);
 };
+
 export default SignUpPage;
